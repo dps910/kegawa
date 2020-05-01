@@ -19,7 +19,7 @@ func GetByMD5(hash string) {
 		log.Println("Invalid md5 hash", err)
 	}
 
-	request.Header.Set("User-Agent", "made in Golang :3")
+	request.Header.Set("User-Agent", "kegawa v0.1")
 
 	// Now to actually make the request, where a response will be returned
 	response, err := client.Do(request)
