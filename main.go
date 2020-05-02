@@ -37,6 +37,14 @@ func GetByMD5(hash string) {
 	log.Printf("%s", body)
 }
 
+// HTTP server
+s := &http.Server{
+    Addr: ":8080"
+    Handler: nil
+}
+
+s.ListenAndServe(http.FileServer(http.Dir("./html")))
+
 func main() {
 	GetByMD5("d91986beca5ca13d88b200109a412d24")
 }
