@@ -1,21 +1,38 @@
 package main
 
 import (
+	"bufio"
 	"crypto/md5"
 	"io"
 	"log"
 	"os"
 )
 
-func main(path string) {
-	// Read the file, if file doesn't exist throw error
-	file, err := os.Open("./1c53f0a1a717e2462c29c1170911927d.png")
+func main() {
+	// Read text file
+	file, err := os.Open("./file.txt")
 	if err != nil {
 		log.Println("There was an error reading the file", err)
 	}
 
 	// Defer closing of file, because now the md5 checksum needs to be checked
 	defer file.Close()
+
+	// Read file contents
+	s := bufio.NewScanner(file)
+
+	// Reads text from source file "file.txt"
+	scantext := s.Scan()
+
+	for scantext {
+		// Reads text from the most recent call generated to Scan()
+		// From my understanding, s.Scan() stores the text in a buffer
+		// and now it can be read by calling s.Text()
+		log.Printf("Here is the text from the file: %s", s.Text())
+
+		// Return to stop it printing a million times
+		return
+	}
 
 	// Return new hash.Hash to compute the md5 checksum of file
 	hash := md5.New()
@@ -28,5 +45,4 @@ func main(path string) {
 
 	// Get md5 checksum of the file data
 	log.Printf("md5 checksum: %x", hash.Sum(nil))
-
 }
