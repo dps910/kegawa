@@ -40,7 +40,7 @@ func GetByMD5(hash string) {
 func httpserver() {
 	// HTTP server
 	http.Handle("/", http.FileServer(http.Dir("./http")))
-
+	log.Println("Listening on port 8080")
 	log.Fatal(http.ListenAndServe(":8080", nil))
 }
 
