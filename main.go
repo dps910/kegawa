@@ -1,15 +1,37 @@
 package main
 
 import (
+	"encoding/json"
 	"io/ioutil"
 	"log"
 	"net/http"
 	"time"
 )
 
+// e621 API
+type API struct {
+	Posts []Posts `json:"posts"`
+}
+
+type Posts struct {
+	ID        int    `json:"id"`
+	CreatedAt string `json:"created_at"`
+	File      File   `json:"file"`
+}
+
+type File struct {
+	Width  int    `json:"width"`
+	Height int    `json:"height"`
+	Ext    string `json:"ext"`
+	Size   int    `json:"size"`
+	Md5    string `json:"md5"`
+	URL    string `json:"url"`
+}
+
+// HTTP client
 var client = http.Client{
-	// to comply with e621 rate limits of 2 reqs per second
-	Timeout: 5 * time.Second,
+	// time out of 2 seconds
+	Timeout: time.Second * 2,
 }
 
 func GetByMD5(hash string) {
@@ -28,20 +50,33 @@ func GetByMD5(hash string) {
 	}
 	defer response.Body.Close()
 
-	// ioutil used to read the response :D
+	// ioutil.ReadAll used to read the response :D
 	body, err := ioutil.ReadAll(response.Body)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	log.Printf("%s", body)
+	log.Println("Status: ", response.Status)
+
+	// Get data from the "Posts" struct
+	a := API{}
+	err = json.Unmarshal(body, &a)
+	if len(a.Posts) == 0 {
+		log.Println(err)
+	}
+
+	imgUrl := a.Posts[0].File.URL
+	md5Hash := a.Posts[0].File.Md5
+	log.Println("md5 checksum: ", md5Hash)
+	log.Println("Image URL: ", imgUrl)
 }
 
 func httpserver() {
 	// HTTP server
+	s := &http.Server{Addr: ":8080", Handler: nil}
 	http.Handle("/", http.FileServer(http.Dir("./http")))
 	log.Println("Listening on port 8080")
-	log.Fatal(http.ListenAndServe(":8080", nil))
+	log.Fatal(s.ListenAndServe())
 }
 
 func main() {
