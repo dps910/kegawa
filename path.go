@@ -8,6 +8,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"strings"
 )
 
 type A struct {
@@ -15,7 +16,11 @@ type A struct {
 }
 
 type P struct {
-	ID int `json:"id"`
+	Tags Tags `json:"tags"`
+}
+
+type Tags struct {
+	Species []string `json:"species"`
 }
 
 var (
@@ -65,9 +70,11 @@ func hash() {
 
 	// Print this epic data
 	if len(abc.P) == 0 {
-		log.Println("request did not succeed because not e621 hash. Or maybe the server is down and the furries made afucky wucky UWU")
+		log.Println("request did not succeed because not e621 hash.")
 	} else {
+		species := abc.P[0].Tags.Species
 		log.Printf("%s:%x", URL, md5hash)
+		log.Printf("Species: %s", strings.Join(species, ", "))
 	}
 }
 
