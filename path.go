@@ -44,15 +44,19 @@ var (
 	c   = &http.Client{}
 )
 
+func check(text string, err error) {
+	if err != nil {
+		log.Fatal(text, err)
+	}
+}
+
 func hash() {
 	// Check if there are enough args
 	if len(os.Args) < 2 {
 		log.Println("You didn't provide enough args")
 	}
 	f, err := ioutil.ReadFile(os.Args[1])
-	if err != nil {
-		log.Println("You didn't provide the file name")
-	}
+	check("You didn't provide the file name:", err)
 
 	md5hash := md5.Sum(f)
 	log.Printf("md5 checksum: %x", md5hash)
@@ -62,24 +66,19 @@ func hash() {
 	// If not successful, error
 	urlAndMd5 := fmt.Sprintf("%s:%x", URL, md5hash)
 	req, err := http.NewRequest("GET", urlAndMd5, nil)
-	if err != nil {
-		log.Println(err)
-	}
+	check("Couldn't create http request:", err)
 
 	req.Header.Add("User-Agent", "kegawa UwU")
 
 	response, err := c.Do(req)
-	if err != nil {
-		log.Println("Couldn't send HTTP request. This is not an md5 from e621")
-	}
+	check("Couldn't send HTTP request:", err)
+	
 	// Defer closing of response body so it can still be read
 	defer response.Body.Close()
 
 	// Read response body
 	body, err := ioutil.ReadAll(response.Body)
-	if err != nil {
-		log.Println("Could not read response body", err)
-	}
+	check("Could not read response body:", err)
 
 	abc := A{}
 	json.Unmarshal(body, &abc)
@@ -97,9 +96,7 @@ func hash() {
 
 	// Database
 	db, err := sql.Open("sqlite3", "./e621.db")
-	if err != nil {
-		log.Fatal(err)
-	}
+	check("Couldn't find database:", err)
 
 	// Check if database is alive (and not dead) :)
 	ctx, timeout := context.WithTimeout(context.Background(), 30*time.Second)
@@ -113,9 +110,7 @@ func hash() {
 
 	// Create a table in sqlite3 :D
 	_, err = db.Exec("CREATE TABLE IF NOT EXISTS e621 (id INTEGER PRIMARY KEY, artist TEXT NOT NULL, urlMd5 TEXT NOT NULL, species TEXT NOT NULL)")
-	if err != nil {
-		log.Fatal(err)
-	}
+	check("Couldn't create table:", err)
 
 	// Insert data :3
 	_, err = db.Exec(
@@ -124,25 +119,6 @@ func hash() {
 		urlAndMd5,
 		strings.Join(abc.P[0].Tags.Species, ", "),
 	)
-	// i
-	// need
-	// to
-	// get
-	// this
-	// to
-	// 69
-	// insertions/deletions
-	// owo
-	// uwu
-	//fwef ew/
-	//f wewe fwef w
-	// fwefwe fw/
-	// fwefwefwef
-	//f wrugetrihgeoruger
-	// rh4895y64y8j94e5g
-	// gfhwe84g3hg3h4g80h08
-	// werjgierjogejog
-	// jerigejirgejiroph
 }
 
 func main() {
